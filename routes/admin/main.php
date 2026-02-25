@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Manager\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/userManagement/main.php';
@@ -20,7 +21,9 @@ require __DIR__ . '/userManagement/main.php';
 Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.module:admin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
     //Dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    //Permission Group
+
+
+
     Route::resource('module', ModuleController::class);
     Route::get('get-module', [ModuleController::class, 'getIndex'])->name('get.module');
     Route::get('get-module-select', [ModuleController::class, 'getIndexSelect'])->name('get.module-select');
