@@ -37,7 +37,7 @@
                     <label class="form-label" for="slug">Slug</label>
                     <input type="text" class="form-control  @error('slug') is-invalid @enderror" name="slug"
                            id="slug"
-                           placeholder="Name" value="{{ old('slug', $data->slug ?? '') }}">
+                           placeholder="Name" value="{{ old('slug', $data->slug ?? '') }}" readonly>
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
