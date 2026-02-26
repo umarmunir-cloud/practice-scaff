@@ -3,29 +3,27 @@
     {{(!empty($page_title) && isset($page_title)) ? $page_title : ''}}
 @endsection
 @push('head-scripts')
-    <link rel="stylesheet" href="{{ asset('admin/datatable/datatables.min.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('admin/datatable/datatables.min.css') }}" rel="stylesheet"/>
 @endpush
 @section('content')
     <div class="card mt-3">
         <div class="card-body">
-            {{-- Start: Page Content --}}
             <div class="d-flex justify-content-between">
                 <div>
                     <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <div
+                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
-                <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    @can('admin_user-management_permission-group-list')
-                        <a href="{{(!empty($url) && isset($url)) ? $url : ''}}" class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
-                    @endcan
+                <div class="btn-toolbar d-none d-md-block" role="toolbar">
+                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
                 </div>
             </div>
             <hr>
-            {{-- Datatatble : Start --}}
             <div class="row">
                 <div class="col-12">
                     <div class="table-responsive">
-                        <table id="indextable" class="table table-bordered table-striped table-hover table-responsive w-100 pt-1">
+                        <table id="indextable"
+                               class="table table-bordered table-striped table-hover table-responsive w-100 pt-1">
                             <thead class="table-dark">
                             <th>#</th>
                             <th>Type</th>
@@ -39,12 +37,11 @@
                 </div>
             </div>
             {{-- Datatatble : End --}}
-            {{-- Page Description : Start --}}
             @if(!empty($p_description) && isset($p_description))
                 <div class="card-footer">
                     <div class="row">
                         <div class="col-12 mb-sm-2 mb-0">
-                            <p>{{(!empty($p_description) && isset($p_description)) ? $p_description : ''}}</p>
+                            <p>{{ $p_description }}</p>
                         </div>
                     </div>
                 </div>
@@ -57,24 +54,25 @@
 @push('footer-scripts')
     <script type="text/javascript" src="{{ asset('admin/datatable/datatables.min.js')}}"></script>
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function () {
             //Datatable
+            let URL = "{{ route('manager.get.crud-activity-trash-log') }}";
             $('#indextable').DataTable({
                 destroy: true,
                 processing: true,
                 serverSide: true,
-                order: [[ 0, "desc" ]],
+                order: [[0, "desc"]],
                 ajax: {
-                    "type":"GET",
-                    "url":"{{ route('admin.get.permission-group-activity-trash-log') }}",
+                    type: "GET",
+                    url: URL,
                 },
                 columns: [
-                    { data: 'id'},
-                    { data: 'type' },
-                    { data: 'current' },
-                    { data: 'old' },
-                    { data: 'updated' },
-                    { data: 'causer' },
+                    {data: 'id'},
+                    {data: 'type'},
+                    {data: 'current'},
+                    {data: 'old'},
+                    {data: 'updated'},
+                    {data: 'causer'},
                 ],
                 columnDefs: [
                     {
@@ -82,14 +80,15 @@
                         orderable: false,
                         searchable: false,
                         width: '100px',
-                        render: function ( data, type, row, meta ) {
+                        render: function (data, type, row, meta) {
                             return meta.row + meta.settings._iDisplayStart + 1;
                         }
                     }
                 ]
             });
         });
-        function selectRange(){
+
+        function selectRange() {
             $('.dataTable').DataTable().ajax.reload()
         }
     </script>

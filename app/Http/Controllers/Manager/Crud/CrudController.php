@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Manager\Crud;
 
 use App\Http\Controllers\Controller;
+use App\Models\Manager;
 use App\Models\PermissionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,21 +14,22 @@ class CrudController extends Controller
 {
     public function index()
     {
-        $data=[
-            'page_title'=>'Permission Group',
-            'p_title'=>'Permission Group',
-            'p_summary'=>'List of Permission Group',
-            'p_description'=>null,
-            'url'=>route('manager.crud.create'),
-            'url_text'=>'Add New',
-            'trash'=>route('manager.get.crud-activity-trash'),
-            'trash_text'=>'View Trash',
+        $data = [
+            'page_title' => 'CRUD Operation Group',
+            'p_title' => 'List Group',
+            'p_summary' => 'List of All Members',
+            'p_description' => null,
+            'url' => route('manager.crud.create'),
+            'url_text' => 'Add New',
+            'trash' => route('manager.get.crud-activity-trash'),
+            'trash_text' => 'View Trash',
         ];
         return view('manager.crud.index')->with($data);
     }
+
     /**
      * Display a listing of the resource.
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function getIndex(Request $request)
@@ -48,26 +50,26 @@ class CrudController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = PermissionGroup::select('permission_groups.*')->count();
+        $totalRecords = Manager::select('manager_crud.*')->count();
         // Total records with filter
-        $totalRecordswithFilter = PermissionGroup::select('permission_groups.*')
-            ->where(function ($q) use ($searchValue){
-                $q->where('permission_groups.name', 'like', '%' .$searchValue . '%');
+        $totalRecordswithFilter = Manager::select('manager_crud.*')
+            ->where(function ($q) use ($searchValue) {
+                $q->where('manager_crud.name', 'like', '%' . $searchValue . '%');
             })
             ->count();
         // Fetch records
-        $records = PermissionGroup::select('permission_groups.*')
-            ->where(function ($q) use ($searchValue){
-                $q->where('permission_groups.name', 'like', '%' .$searchValue . '%');
+        $records = Manager::select('manager_crud.*')
+            ->where(function ($q) use ($searchValue) {
+                $q->where('manager_crud.name', 'like', '%' . $searchValue . '%');
             })
             ->skip($start)
             ->take($rowperpage)
-            ->orderBy($columnName,$columnSortOrder)
+            ->orderBy($columnName, $columnSortOrder)
             ->get();
 
         $data_arr = array();
 
-        foreach($records as $record){
+        foreach ($records as $record) {
             $id = $record->id;
             $name = $record->name;
             $slug = $record->slug;
@@ -87,20 +89,21 @@ class CrudController extends Controller
         echo json_encode($response);
         exit;
     }
+
     /**
      * Display a listing of the resource.
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function getIndexSelect(Request $request)
     {
         $data = [];
 
-        if($request->has('q')){
+        if ($request->has('q')) {
             $search = $request->q;
-            $data = PermissionGroup::select('permission_groups.id as id','permission_groups.name as name')
-                ->where(function ($q) use ($search){
-                    $q->where('permission_groups.name', 'like', '%' .$search . '%');
+            $data = Manager::select('manager_crud.id as id', 'manager_crud.name as name')
+                ->where(function ($q) use ($search) {
+                    $q->where('manager_crud.name', 'like', '%' . $search . '%');
                 })
                 ->get();
         }
@@ -108,44 +111,45 @@ class CrudController extends Controller
         return response()->json($data);
 
     }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         $data = array(
-            'page_title'=>'Permission Group',
-            'p_title'=>'Permission Group',
-            'p_summary'=>'Add Permission Group',
-            'p_description'=>null,
+            'page_title' => 'Manager Page',
+            'p_title' => 'Add New',
+            'p_summary' => 'Add Members',
+            'p_description' => null,
             'method' => 'POST',
             'action' => route('manager.crud.store'),
-            'url'=>route('manager.crud.index'),
-            'url_text'=>'View All',
+            'url' => route('manager.crud.index'),
+            'url_text' => 'View All',
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('admin.userManagement.permissionGroup.create')->with($data);
+        return view('manager.crud.create')->with($data);
     }
 
     /**
      * Store a newly created resource in storage.
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|unique:permission_groups,name',
-            'slug' => 'required|unique:permission_groups,slug',
+            'name' => 'required|unique:manager_crud,name',
+            'slug' => 'required|unique:manager_crud,slug',
         ]);
         //
-        $arr =  [
+        $arr = [
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
         ];
-        $record = PermissionGroup::create($arr);
-        $messages =  [
+        $record = Manager::create($arr);
+        $messages = [
             array(
                 'message' => 'Record created successfully',
                 'message_type' => 'success'
@@ -158,66 +162,68 @@ class CrudController extends Controller
 
     /**
      * Display the specified resource.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
     public function show(string $id)
     {
-        $record = PermissionGroup::select('permission_groups.*')
-            ->where('id', '=' ,$id )
+        $record = Manager::select('manager_crud.*')
+            ->where('id', '=', $id)
             ->first();
-        if (empty($record)){
+        if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
         // Add activity logs
         $user = Auth::user();
-        activity('Permission Group')
+        activity('CRUD Operation Groups')
             ->performedOn($record)
             ->causedBy($user)
             ->event('viewed')
-            ->withProperties(['attributes' => ['name'=>$record->name]])
+            ->withProperties(['attributes' => ['name' => $record->name]])
             ->log('viewed');
         //Data Array
         $data = array(
-            'page_title'=>'Permission Group',
-            'p_title'=>'Permission Group',
-            'p_summary'=>'Show Permission Group',
-            'p_description'=>null,
+            'page_title' => 'CRUD OPERATION',
+            'p_title' => 'Members',
+            'p_summary' => 'Read Only Members',
+            'p_description' => null,
             'method' => 'POST',
-            'action' => route('manager.crud.update',$record->id),
-            'url'=>route('manager.crud.index'),
-            'url_text'=>'View All',
-            'data'=>$record,
+            'action' => route('manager.crud.update', $record->id),
+            'url' => route('manager.crud.index'),
+            'url_text' => 'View All',
+            'data' => $record,
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('admin.userManagement.permissionGroup.show')->with($data);
+        return view('manager.crud.show')->with($data);
     }
+
     /**
      * Display the specified resource Activity.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
     public function getActivity(string $id)
     {
         //Data Array
         $data = array(
-            'page_title'=>'Permission Group Activity',
-            'p_title'=>'Permission Group Activity',
-            'p_summary'=>'Show Permission Group Activity',
-            'p_description'=>null,
-            'url'=>route('manager.crud.index'),
-            'url_text'=>'View All',
-            'id'=>$id,
+            'page_title' => 'crud Activity',
+            'p_title' => 'Activities',
+            'p_summary' => 'Show All Activity',
+            'p_description' => null,
+            'url' => route('manager.crud.index'),
+            'url_text' => 'View All',
+            'id' => $id,
         );
-        return view('admin.userManagement.permissionGroup.activity')->with($data);
+        return view('manager.crud.activity')->with($data);
     }
+
     /**
      * Display the specified resource Activity Logs.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
-    public function getActivityLog(Request $request,string $id)
+    public function getActivityLog(Request $request, string $id)
     {
         ## Read value
         $draw = $request->get('draw');
@@ -235,74 +241,72 @@ class CrudController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where('activity_log.subject_id',$id)
+        $totalRecords = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', Manager::class)
+            ->where('activity_log.subject_id', $id)
             ->count();
 
         // Total records with filter
-        $totalRecordswithFilter = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_id',$id)
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where(function ($q) use ($searchValue){
-                $q->where('activity_log.description', 'like', '%' .$searchValue . '%')
-                    ->orWhere('users.name', 'like', '%' .$searchValue . '%');
+        $totalRecordswithFilter = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_id', $id)
+            ->where('activity_log.subject_type', Manager::class)
+            ->where(function ($q) use ($searchValue) {
+                $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
+                    ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->count();
 
         // Fetch records
-        $records = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_id',$id)
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where(function ($q) use ($searchValue){
-                $q->where('activity_log.description', 'like', '%' .$searchValue . '%')
-                    ->orWhere('users.name', 'like', '%' .$searchValue . '%');
+        $records = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_id', $id)
+            ->where('activity_log.subject_type', Manager::class)
+            ->where(function ($q) use ($searchValue) {
+                $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
+                    ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->skip($start)
             ->take($rowperpage)
-            ->orderBy($columnName,$columnSortOrder)
+            ->orderBy($columnName, $columnSortOrder)
             ->get();
 
 
         $data_arr = array();
 
-        foreach($records as $record){
+        foreach ($records as $record) {
             $id = $record->id;
             $attributes = (!empty($record->properties['attributes']) ? $record->properties['attributes'] : '');
             $old = (!empty($record->properties['old']) ? $record->properties['old'] : '');
-            $current='<ul class="list-unstyled">';
+            $current = '<ul class="list-unstyled">';
             //Current
-            if (!empty($attributes)){
-                foreach ($attributes as $key => $value){
+            if (!empty($attributes)) {
+                foreach ($attributes as $key => $value) {
                     if (is_array($value)) {
                         $current .= '<li>';
                         $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $current .= '</li>';
-                    }
-                    else{
+                    } else {
                         $current .= '<li>';
                         $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $current .= '</li>';
                     }
                 }
             }
-            $current.='</ul>';
+            $current .= '</ul>';
             //Old
-            $oldValue='<ul class="list-unstyled">';
-            if (!empty($old)){
-                foreach ($old as $key => $value){
+            $oldValue = '<ul class="list-unstyled">';
+            if (!empty($old)) {
+                foreach ($old as $key => $value) {
                     if (is_array($value)) {
                         $oldValue .= '<li>';
                         $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $oldValue .= '</li>';
-                    }
-                    else{
+                    } else {
                         $oldValue .= '<li>';
                         $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $oldValue .= '</li>';
@@ -310,11 +314,11 @@ class CrudController extends Controller
                 }
             }
             //updated at
-            $updated = 'Updated:'.$record->updated_at->diffForHumans().'<br> At:'.$record->updated_at->isoFormat('llll');
-            $oldValue.='</ul>';
+            $updated = 'Updated:' . $record->updated_at->diffForHumans() . '<br> At:' . $record->updated_at->isoFormat('llll');
+            $oldValue .= '</ul>';
             //Causer
             $causer = isset($record->causer) ? $record->causer : '';
-            $type= $record->description;
+            $type = $record->description;
             $data_arr[] = array(
                 "id" => $id,
                 "current" => $current,
@@ -334,6 +338,7 @@ class CrudController extends Controller
         echo json_encode($response);
         exit;
     }
+
     /**
      * Display the trash resource Activity.
      * @return \Illuminate\Http\Response
@@ -342,18 +347,19 @@ class CrudController extends Controller
     {
         //Data Array
         $data = array(
-            'page_title'=>'Permission Group Activity',
-            'p_title'=>'Permission Group Activity',
-            'p_summary'=>'Show Permission Group Trashed Activity',
-            'p_description'=>null,
-            'url'=>route('manager.crud.index'),
-            'url_text'=>'View All',
+            'page_title' => 'All Trashed Activities',
+            'p_title' => 'Trash Activity',
+            'p_summary' => 'Show Crud Trashed Activity',
+            'p_description' => null,
+            'url' => route('manager.crud.index'),
+            'url_text' => 'View All',
         );
-        return view('admin.userManagement.permissionGroup.trash')->with($data);
+        return view('manager.crud.trash')->with($data);
     }
+
     /**
      * Display the trash resource Activity Logs.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
     public function getTrashActivityLog(Request $request)
@@ -374,74 +380,72 @@ class CrudController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where('activity_log.event','deleted')
+        $totalRecords = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', PermissionGroup::class)
+            ->where('activity_log.event', 'deleted')
             ->count();
 
         // Total records with filter
-        $totalRecordswithFilter = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where('activity_log.event','deleted')
-            ->where(function ($q) use ($searchValue){
-                $q->where('activity_log.description', 'like', '%' .$searchValue . '%')
-                    ->orWhere('users.name', 'like', '%' .$searchValue . '%');
+        $totalRecordswithFilter = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', PermissionGroup::class)
+            ->where('activity_log.event', 'deleted')
+            ->where(function ($q) use ($searchValue) {
+                $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
+                    ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->count();
 
         // Fetch records
-        $records = Activity::select('activity_log.*','users.name as causer')
-            ->leftJoin('users','users.id','activity_log.causer_id')
-            ->leftJoin('permission_groups','permission_groups.id','activity_log.subject_id')
-            ->where('activity_log.subject_type',PermissionGroup::class)
-            ->where('activity_log.event','deleted')
-            ->where(function ($q) use ($searchValue){
-                $q->where('activity_log.description', 'like', '%' .$searchValue . '%')
-                    ->orWhere('users.name', 'like', '%' .$searchValue . '%');
+        $records = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
+            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', PermissionGroup::class)
+            ->where('activity_log.event', 'deleted')
+            ->where(function ($q) use ($searchValue) {
+                $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
+                    ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->skip($start)
             ->take($rowperpage)
-            ->orderBy($columnName,$columnSortOrder)
+            ->orderBy($columnName, $columnSortOrder)
             ->get();
 
 
         $data_arr = array();
 
-        foreach($records as $record){
+        foreach ($records as $record) {
             $id = $record->id;
             $attributes = (!empty($record->properties['attributes']) ? $record->properties['attributes'] : '');
             $old = (!empty($record->properties['old']) ? $record->properties['old'] : '');
-            $current='<ul class="list-unstyled">';
+            $current = '<ul class="list-unstyled">';
             //Current
-            if (!empty($attributes)){
-                foreach ($attributes as $key => $value){
+            if (!empty($attributes)) {
+                foreach ($attributes as $key => $value) {
                     if (is_array($value)) {
                         $current .= '<li>';
                         $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $current .= '</li>';
-                    }
-                    else{
+                    } else {
                         $current .= '<li>';
                         $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $current .= '</li>';
                     }
                 }
             }
-            $current.='</ul>';
+            $current .= '</ul>';
             //Old
-            $oldValue='<ul class="list-unstyled">';
-            if (!empty($old)){
-                foreach ($old as $key => $value){
+            $oldValue = '<ul class="list-unstyled">';
+            if (!empty($old)) {
+                foreach ($old as $key => $value) {
                     if (is_array($value)) {
                         $oldValue .= '<li>';
                         $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $oldValue .= '</li>';
-                    }
-                    else{
+                    } else {
                         $oldValue .= '<li>';
                         $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
                         $oldValue .= '</li>';
@@ -449,11 +453,11 @@ class CrudController extends Controller
                 }
             }
             //updated at
-            $updated = 'Updated:'.$record->updated_at->diffForHumans().'<br> At:'.$record->updated_at->isoFormat('llll');
-            $oldValue.='</ul>';
+            $updated = 'Updated:' . $record->updated_at->diffForHumans() . '<br> At:' . $record->updated_at->isoFormat('llll');
+            $oldValue .= '</ul>';
             //Causer
             $causer = isset($record->causer) ? $record->causer : '';
-            $type= $record->description;
+            $type = $record->description;
             $data_arr[] = array(
                 "id" => $id,
                 "current" => $current,
@@ -473,60 +477,65 @@ class CrudController extends Controller
         echo json_encode($response);
         exit;
     }
+
     /**
      * Show the form for editing the specified resource.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
     public function edit(string $id)
     {
-        $record = PermissionGroup::select('permission_groups.*')
-            ->where('id', '=' ,$id )
+        $record = Manager::select('manager_crud.*')
+            ->where('id', '=', $id)
             ->first();
-        if (empty($record)){
+        if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
         $data = array(
-            'page_title'=>'Permission Group',
-            'p_title'=>'Permission Group',
-            'p_summary'=>'Edit Permission Group',
-            'p_description'=>null,
+            'page_title' => 'CRUD OPERATION',
+            'p_title' => 'Edit Page',
+            'p_summary' => 'Edit Member',
+            'p_description' => null,
             'method' => 'POST',
-            'action' => route('manager.crud.update',$record->id),
-            'url'=>route('manager.crud.index'),
-            'url_text'=>'View All',
-            'data'=>$record,
+            'action' => route('manager.crud.update', $record->id),
+            'url' => route('manager.crud.index'),
+            'url_text' => 'View All',
+            'data' => $record,
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('admin.userManagement.permissionGroup.edit')->with($data);
+        return view('manager.crud.edit')->with($data);
     }
 
     /**
      * Update the specified resource in storage.
-     * @param  String_  $id
-     * @param  \Illuminate\Http\Request  $request
+     * @param String_ $id
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, string $id)
     {
-        $record = PermissionGroup::select('permission_groups.*')
-            ->where('id', '=' ,$id )
-            ->first();
-        if (empty($record)){
+        // Manager model ko select kar rahe hain
+        $record = Manager::where('id', '=', $id)->first();
+
+        if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
+
+        // Validation: manager_crud table ke mutabiq unique check
         $this->validate($request, [
-            'name' => 'required|unique:permission_groups,name,'.$record->id,
-            'slug' => 'required|unique:permission_groups,slug,'.$record->id,
+            'name' => 'required|unique:manager_crud,name,' . $record->id,
+            'slug' => 'required|unique:manager_crud,slug,' . $record->id,
         ]);
-        //
-        $arr =  [
+
+        // Update record
+        $arr = [
             'name' => $request->input('name'),
             'slug' => $request->input('slug'),
         ];
+
         $record->update($arr);
-        $messages =  [
+        $messages = [
             array(
                 'message' => 'Record updated successfully',
                 'message_type' => 'success'
@@ -539,20 +548,20 @@ class CrudController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     * @param  String_  $id
+     * @param String_ $id
      * @return \Illuminate\Http\Response
      */
     public function destroy(string $id)
     {
-        $record = PermissionGroup::select('permission_groups.*')
-            ->where('id', '=' ,$id )
+        $record = Manager::select('manager_crud.*')
+            ->where('id', '=', $id)
             ->first();
-        if (empty($record)){
+        if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
         $record->delete();
 
-        $messages =  [
+        $messages = [
             array(
                 'message' => 'Record deleted successfully',
                 'message_type' => 'success'

@@ -16,14 +16,11 @@
                         class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    @can('admin_user-management_permission-group-create')
-                        <a href="{{(!empty($url) && isset($url)) ? $url : ''}}"
-                           class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
-                    @endcan
-                    @can('admin_user-management_permission-group-activity-log-trash')
-                        <a href="{{(!empty($trash) && isset($trash)) ? $trash : ''}}"
-                           class="btn btn-sm btn-danger">{{(!empty($trash_text) && isset($trash_text)) ? $trash_text : ''}}</a>
-                    @endcan
+                    <a href="{{(!empty($url) && isset($url)) ? $url : ''}}"
+                       class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
+
+                    <a href="{{(!empty($trash) && isset($trash)) ? $trash : ''}}"
+                       class="btn btn-sm btn-danger">{{(!empty($trash_text) && isset($trash_text)) ? $trash_text : ''}}</a>
                 </div>
             </div>
             <hr>
@@ -101,7 +98,7 @@
                 order: [[0, "desc"]],
                 ajax: {
                     "type": "GET",
-                    "url": "{{route('admin.get.permission-group')}}",
+                    "url": "{{ route('manager.get.crud') }}",
                     // "data":function (d){
                     //     d.category_id = document.getElementById('category-id').value;
                     // }
@@ -127,24 +124,22 @@
                         searchable: false,
                         orderable: false,
                         render: function (data, type, row, meta) {
-                            let URL = "{{ route('admin.permission-group.show', ':id') }}";
+                            let URL = "{{ route('manager.crud.show', ':id') }}";
                             URL = URL.replace(':id', row.id);
-                            let ACTIVITY = "{{ route('admin.get.permission-group-activity', ':id') }}";
+
+                            let ACTIVITY = "{{ route('manager.get.crud-activity', ':id') }}";
                             ACTIVITY = ACTIVITY.replace(':id', row.id);
                             return '<div class="d-flex">' +
-                                @can('admin_user-management_permission-group-show')
-                                    '<a class="me-1" href="' + URL + '"><span class="badge bg-success text-dark">Show</span>' +
-                                @endcan
-                                    @can('admin_user-management_permission-group-edit')
-                                    '<a class="me-1" href="' + URL + '/edit"><span class="badge bg-info text-dark">Edit</span></a>' +
-                                @endcan
-                                    @can('admin_user-management_permission-group-activity-log')
-                                    '<a class="me-1" href="' + ACTIVITY + '"><span class="badge bg-warning text-dark">Activity</span></a>' +
-                                @endcan
-                                    @can('admin_user-management_permission-group-delete')
-                                    '<a class="me-1" href="javascript:void(0)"><span type="button" class="badge bg-danger" data-url="' + URL + '" data-coreui-toggle="modal" data-coreui-target="#del-model">Delete</span></a>' +
-                                @endcan
-                                    '</div>'
+
+                                '<a class="me-1" href="' + URL + '"><span class="badge bg-success text-dark">Show</span>' +
+
+                                '<a class="me-1" href="' + URL + '/edit"><span class="badge bg-info text-dark">Edit</span></a>' +
+
+                                '<a class="me-1" href="' + ACTIVITY + '"><span class="badge bg-warning text-dark">Activity</span></a>' +
+
+                                '<a class="me-1" href="javascript:void(0)"><span type="button" class="badge bg-danger" data-url="' + URL + '" data-coreui-toggle="modal" data-coreui-target="#del-model">Delete</span></a>' +
+
+                                '</div>'
 
                         }
                     }
@@ -168,7 +163,7 @@
     {{-- Toastr : Script : Start --}}
     @if(Session::has('messages'))
         <script>
-            noti({!! json_encode((Session::get('messages'))) !!});
+            noti(@json(Session::get('messages')));
         </script>
     @endif
     {{-- Toastr : Script : End --}}

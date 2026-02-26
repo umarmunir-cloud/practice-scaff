@@ -12,28 +12,30 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <div
+                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    @can('admin_user-management_permission-group-list')
-                        <a href="{{(!empty($url) && isset($url)) ? $url : ''}}" class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
-                    @endcan
+                        <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
                 </div>
             </div>
             <hr>
             {{-- Start: Form --}}
-            <form method="{{$method}}" action="{{$action}}" enctype="{{$enctype}}">
+            <form method="POST" action="{{ route('manager.crud.store') }}" enctype="{{$enctype}}">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label" for="name">Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name" onkeyup="listingslug(this.value)" placeholder="Name" value="{{old('name')}}">
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name"
+                           onkeyup="listingslug(this.value)" placeholder="Name"
+                           value="{{ old('name', $data->name ?? '') }}">
                     @error('name')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="slug">Slug</label>
-                    <input type="text" class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug" placeholder="Slug" value="{{old('slug')}}">
+                    <input type="text" class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug"
+                           placeholder="Slug" value="{{ old('slug', $data->slug ?? '') }}">
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
@@ -68,8 +70,9 @@
                 .replace(/ /g, '-')         // Replace space with -
                 .replace(/[^\w-]+/g, '')    // Remove all non-word chars
                 .replace(/\-\-+/g, '-')     // Replace multiple - with single -
-                .replace(/_+/g,'');           // Replace multiple _ with single empty space
+                .replace(/_+/g, '');           // Replace multiple _ with single empty space
         }
+
         function listingslug(text) {
             $('#slug').val(slugify(text));
         }

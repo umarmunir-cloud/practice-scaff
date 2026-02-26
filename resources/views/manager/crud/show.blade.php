@@ -12,29 +12,28 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <div
+                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    @can('admin_user-management_permission-group-list')
-                        <a href="{{(!empty($url) && isset($url)) ? $url : ''}}" class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
-                    @endcan
+                        <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
                 </div>
             </div>
             <hr>
             {{-- Start: Form --}}
-            <form method="{{$method}}" action="{{$action}}" enctype="{{$enctype}}">
+            <form method="POST" action="{{ $action }}" enctype="{{ $enctype }}">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
                     <label class="form-label" for="name">Name</label>
-                    <input type="text" disabled class="form-control @error('name') is-invalid @enderror" name="name" id="name" placeholder="Name" value="{{(isset($data) ? $data->name : old('name'))}}">
+                    <input type="text" disabled class="form-control" value="{{ $data->name ?? old('name') }}">
                     @error('name')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="slug">Slug</label>
-                    <input type="text" disabled class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug" placeholder="Name" value="{{(isset($data) ? $data->slug : old('slug'))}}">
+                    <input type="text" disabled class="form-control" value="{{ $data->slug ?? old('slug') }}">
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
@@ -60,7 +59,7 @@
     {{-- Toastr : Script : Start --}}
     @if(Session::has('messages'))
         <script>
-            noti({!! json_encode((Session::get('messages'))) !!});
+            noti(@json(Session::get('messages')));
         </script>
     @endif
     {{-- Toastr : Script : End --}}

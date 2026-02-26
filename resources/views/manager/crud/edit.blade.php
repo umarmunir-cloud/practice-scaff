@@ -16,22 +16,19 @@
                         class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    @can('admin_user-management_permission-group-list')
-                        <a href="{{(!empty($url) && isset($url)) ? $url : ''}}"
-                           class="btn btn-sm btn-primary">{{(!empty($url_text) && isset($url_text)) ? $url_text : ''}}</a>
-                    @endcan
+                        <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
                 </div>
             </div>
             <hr>
             {{-- Start: Form --}}
-            <form method="{{$method}}" action="{{$action}}" enctype="{{$enctype}}">
+            <form method="POST" action="{{ route('manager.crud.update', $data->id) }}" enctype="{{ $enctype }}">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
                     <label class="form-label" for="name">Name</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name"
                            onkeyup="listingslug(this.value)" placeholder="Name"
-                           value="{{(isset($data) ? $data->name : old('name'))}}">
+                           value="{{ old('name', $data->name ?? '') }}">
                     @error('name')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
@@ -39,7 +36,7 @@
                 <div class="mb-3">
                     <label class="form-label" for="slug">Slug</label>
                     <input type="text" class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug"
-                           placeholder="Name" value="{{(isset($data) ? $data->slug : old('slug'))}}">
+                           placeholder="Name" value="{{ old('slug', $data->slug ?? '') }}">
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
@@ -67,14 +64,15 @@
         //Slugify
         function slugify(text) {
             return text
-                .normalize('NFD')           // The normalize() method returns the Unicode Normalization Form of a given string.
-                .toLowerCase()              // Convert the string to lowercase letters
-                .toString()                 // Cast to string
-                .trim()                     // Remove whitespace from both sides of a string
-                .replace(/ /g, '-')         // Replace space with -
-                .replace(/[^\w-]+/g, '')    // Remove all non-word chars
-                .replace(/\-\-+/g, '-')     // Replace multiple - with single -
-                .replace(/_+/g, '');           // Replace multiple _ with single empty space
+                .normalize('NFD') // Unicode Normalization
+                // The normalize() method returns the Unicode Normalization Form of a given string.
+                .toLowerCase() // Convert the string to lowercase letters
+                .toString() // Cast to string
+                .trim() // Remove whitespace from both sides of a string
+                .replace(/ /g, '-') // Replace space with -
+                .replace(/[^\w-]+/g, '') // Remove all non-word chars
+                .replace(/\-\-+/g, '-') // Replace multiple - with single -
+                .replace(/_+/g, ''); // Replace multiple _ with single empty space
         }
 
         function listingslug(text) {
