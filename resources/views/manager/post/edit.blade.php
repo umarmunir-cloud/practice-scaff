@@ -16,7 +16,7 @@
                         class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                        <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
+                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
                 </div>
             </div>
             <hr>
@@ -35,7 +35,8 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="slug">Slug</label>
-                    <input type="text" class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug"
+                    <input type="text" class="form-control  @error('slug') is-invalid @enderror" name="slug"
+                           id="slug"
                            placeholder="Name" value="{{ old('slug', $data->slug ?? '') }}">
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>

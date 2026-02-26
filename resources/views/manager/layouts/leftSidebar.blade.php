@@ -15,7 +15,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('manager/category*') ? 'active' : '' }}"
                        href="{{route('manager.category.index')}}">
-                        <i class="nav-icon cil-cursor"></i> Categories
+                        <i class="nav-icon cil-cursor"></i> Category
                     </a>
                 </li>
             @endcan
