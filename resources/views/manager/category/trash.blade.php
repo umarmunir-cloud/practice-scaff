@@ -1,6 +1,6 @@
 @extends('manager.layouts.app')
 @section('page_title')
-    {{(!empty($page_title) && isset($page_title)) ? $page_title : ''}}
+    {{ $page_title ?? '' }}
 @endsection
 @push('head-scripts')
     <link rel="stylesheet" href="{{ asset('admin/datatable/datatables.min.css') }}" rel="stylesheet"/>
@@ -10,9 +10,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <div>
-                    <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div
-                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <h4 class="card-title mb-0">{{ $p_title ?? '' }}</h4>
+                    <div class="small text-medium-emphasis">{{ $p_summary ?? '' }}</div>
                 </div>
                 <div class="btn-toolbar d-none d-md-block" role="toolbar">
                     <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
@@ -27,7 +26,7 @@
                             <thead class="table-dark">
                             <th>#</th>
                             <th>Type</th>
-                            <th>Current</th>
+                            <th>Current (Relations)</th>
                             <th>Old</th>
                             <th>At</th>
                             <th>User</th>
@@ -36,8 +35,7 @@
                     </div>
                 </div>
             </div>
-            {{-- Datatatble : End --}}
-            @if(!empty($p_description) && isset($p_description))
+            @if(!empty($p_description))
                 <div class="card-footer">
                     <div class="row">
                         <div class="col-12 mb-sm-2 mb-0">
@@ -46,8 +44,6 @@
                     </div>
                 </div>
             @endif
-            {{-- Page Description : End --}}
-            {{-- End: Page Content --}}
         </div>
     </div>
 @endsection
@@ -55,8 +51,8 @@
     <script type="text/javascript" src="{{ asset('admin/datatable/datatables.min.js')}}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            //Datatable
             let URL = "{{ route('manager.get.category-activity-trash-log') }}";
+
             $('#indextable').DataTable({
                 destroy: true,
                 processing: true,
@@ -79,7 +75,7 @@
                         targets: 0,
                         orderable: false,
                         searchable: false,
-                        width: '100px',
+                        width: '80px',
                         render: function (data, type, row, meta) {
                             return meta.row + meta.settings._iDisplayStart + 1;
                         }
@@ -92,7 +88,7 @@
             $('.dataTable').DataTable().ajax.reload()
         }
     </script>
-    {{-- Delete Confirmation Model : Script : Start --}}
+
     <script>
         $("#del-model").on('show.coreui.modal', function (event) {
             var triggerLink = $(event.relatedTarget);
@@ -100,12 +96,10 @@
             $("#del-form").attr('action', url);
         })
     </script>
-    {{-- Delete Confirmation Model : Script : Start --}}
-    {{-- Toastr : Script : Start --}}
+
     @if(Session::has('messages'))
         <script>
-            noti({!! json_encode((Session::get('messages'))) !!});
+            noti(@json(Session::get('messages')));
         </script>
     @endif
-    {{-- Toastr : Script : End --}}
 @endpush

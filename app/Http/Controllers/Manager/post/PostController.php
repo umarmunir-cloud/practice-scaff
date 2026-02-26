@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Manager\post;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manager;
-use App\Models\PermissionGroup;
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Spatie\Activitylog\Models\Activity;
 
-class postController extends Controller
+class PostController extends Controller
 {
     public function index()
     {
         $data = [
             'page_title' => 'POSTS',
-            'p_title' => 'Posts',
+            'p_title' => 'Post',
             'p_summary' => 'List of Posts',
             'p_description' => null,
             'url' => route('manager.post.create'),
@@ -119,7 +118,7 @@ class postController extends Controller
     {
         $data = array(
             'page_title' => 'Post Page',
-            'p_title' => 'Posts',
+            'p_title' => 'Post',
             'p_summary' => 'Add Post',
             'p_description' => null,
             'method' => 'POST',
@@ -184,7 +183,7 @@ class postController extends Controller
         //Data Array
         $data = array(
             'page_title' => 'POSTS',
-            'p_title' => 'Posts',
+            'p_title' => 'Post',
             'p_summary' => 'Show Post',
             'p_description' => null,
             'method' => 'POST',
@@ -208,8 +207,8 @@ class postController extends Controller
         //Data Array
         $data = array(
             'page_title' => 'Activity Page',
-            'p_title' => 'Posts Activity',
-            'p_summary' => 'Show Posts Activity',
+            'p_title' => 'Post Activity',
+            'p_summary' => 'Show Post Activity',
             'p_description' => null,
             'url' => route('manager.post.index'),
             'url_text' => 'View All',
@@ -348,7 +347,7 @@ class postController extends Controller
         //Data Array
         $data = array(
             'page_title' => 'Trashed page',
-            'p_title' => 'Posts Activity',
+            'p_title' => 'Post Activity',
             'p_summary' => 'Show Post Trashed Activity',
             'p_description' => null,
             'url' => route('manager.post.index'),
@@ -362,120 +361,98 @@ class postController extends Controller
      * @param String_ $id
      * @return \Illuminate\Http\Response
      */
+
+    // apna correct model namespace likhna
+
     public function getTrashActivityLog(Request $request)
     {
-        ## Read value
+
         $draw = $request->get('draw');
         $start = $request->get("start");
-        $rowperpage = $request->get("length"); // Rows display per page
+        $rowperpage = $request->get("length");
 
         $columnIndex_arr = $request->get('order');
         $columnName_arr = $request->get('columns');
         $order_arr = $request->get('order');
         $search_arr = $request->get('search');
 
-        $columnIndex = $columnIndex_arr[0]['column']; // Column index
-        $columnName = $columnName_arr[$columnIndex]['data']; // Column name
-        $columnSortOrder = $order_arr[0]['dir']; // asc or desc
-        $searchValue = $search_arr['value']; // Search value
+        $columnIndex = $columnIndex_arr[0]['column'];
+        $columnName = $columnName_arr[$columnIndex]['data'];
+        $columnSortOrder = $order_arr[0]['dir'];
+        $searchValue = $search_arr['value'];
 
-        // Total records
-        $totalRecords = Activity::select('activity_log.*', 'users.name as causer')
-            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
-            ->where('activity_log.subject_type', PermissionGroup::class)
-            ->where('activity_log.event', 'deleted')
-            ->count();
 
-        // Total records with filter
-        $totalRecordswithFilter = Activity::select('activity_log.*', 'users.name as causer')
-            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
-            ->where('activity_log.subject_type', PermissionGroup::class)
-            ->where('activity_log.event', 'deleted')
+        $baseQuery = Activity::select('activity_log.*', 'users.name as causer')
+            ->leftJoin('users', 'users.id', '=', 'activity_log.causer_id')
+            ->leftJoin('manager_post', 'manager_post.id', '=', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', Manager::class)
+            ->where('activity_log.event', 'deleted');
+
+
+        $totalRecords = (clone $baseQuery)->count();
+
+
+        $totalRecordswithFilter = (clone $baseQuery)
             ->where(function ($q) use ($searchValue) {
                 $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
                     ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->count();
 
-        // Fetch records
-        $records = Activity::select('activity_log.*', 'users.name as causer')
-            ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
-            ->where('activity_log.subject_type', PermissionGroup::class)
-            ->where('activity_log.event', 'deleted')
+
+        $records = (clone $baseQuery)
             ->where(function ($q) use ($searchValue) {
                 $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
                     ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
             ->skip($start)
             ->take($rowperpage)
-            ->orderBy($columnName, $columnSortOrder)
+            ->orderBy('activity_log.' . $columnName, $columnSortOrder)
             ->get();
 
-
-        $data_arr = array();
+        $data_arr = [];
 
         foreach ($records as $record) {
-            $id = $record->id;
-            $attributes = (!empty($record->properties['attributes']) ? $record->properties['attributes'] : '');
-            $old = (!empty($record->properties['old']) ? $record->properties['old'] : '');
+
+            $attributes = $record->properties['attributes'] ?? [];
+            $old = $record->properties['old'] ?? [];
+
             $current = '<ul class="list-unstyled">';
-            //Current
-            if (!empty($attributes)) {
-                foreach ($attributes as $key => $value) {
-                    if (is_array($value)) {
-                        $current .= '<li>';
-                        $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $current .= '</li>';
-                    } else {
-                        $current .= '<li>';
-                        $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $current .= '</li>';
-                    }
-                }
+            foreach ($attributes as $key => $value) {
+                $current .= '<li><i class="fas fa-angle-right"></i> '
+                    . $key . ': <mark>' . $value . '</mark></li>';
             }
             $current .= '</ul>';
-            //Old
+
             $oldValue = '<ul class="list-unstyled">';
-            if (!empty($old)) {
-                foreach ($old as $key => $value) {
-                    if (is_array($value)) {
-                        $oldValue .= '<li>';
-                        $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $oldValue .= '</li>';
-                    } else {
-                        $oldValue .= '<li>';
-                        $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $oldValue .= '</li>';
-                    }
-                }
+            foreach ($old as $key => $value) {
+                $oldValue .= '<li><i class="fas fa-angle-right"></i> '
+                    . $key . ': <mark>' . $value . '</mark></li>';
             }
-            //updated at
-            $updated = 'Updated:' . $record->updated_at->diffForHumans() . '<br> At:' . $record->updated_at->isoFormat('llll');
             $oldValue .= '</ul>';
-            //Causer
-            $causer = isset($record->causer) ? $record->causer : '';
-            $type = $record->description;
-            $data_arr[] = array(
-                "id" => $id,
+
+
+            $updated = 'Deleted: ' . $record->created_at->diffForHumans()
+                . '<br> At: ' . $record->created_at->isoFormat('llll');
+
+            $data_arr[] = [
+                "id" => $record->id,
                 "current" => $current,
                 "old" => $oldValue,
                 "updated" => $updated,
-                "causer" => $causer,
-                "type" => $type,
-            );
+                "causer" => $record->causer ?? '',
+                "type" => $record->description,
+            ];
         }
-        $response = array(
+
+        $response = [
             "draw" => intval($draw),
             "iTotalRecords" => $totalRecords,
             "iTotalDisplayRecords" => $totalRecordswithFilter,
             "aaData" => $data_arr
-        );
+        ];
 
-        echo json_encode($response);
-        exit;
+        return response()->json($response);
     }
 
     /**
@@ -493,7 +470,7 @@ class postController extends Controller
         }
         $data = array(
             'page_title' => 'POSTS',
-            'p_title' => 'Posts',
+            'p_title' => 'Post',
             'p_summary' => 'Edit Post',
             'p_description' => null,
             'method' => 'POST',

@@ -23,7 +23,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('manager/post*') ? 'active' : '' }}"
                        href="{{route('manager.post.index')}}">
-                        <i class="nav-icon cil-cursor"></i> Posts
+                        <i class="nav-icon cil-cursor"></i> Post
                     </a>
                 </li>
             @endcan

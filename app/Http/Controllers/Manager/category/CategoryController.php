@@ -390,7 +390,7 @@ class categoryController extends Controller
         // Total records with filter
         $totalRecordswithFilter = Activity::select('activity_log.*', 'users.name as causer')
             ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
+            ->leftJoin('manager_category', 'manager_category.id', 'activity_log.subject_id')
             ->where('activity_log.subject_type', PermissionGroup::class)
             ->where('activity_log.event', 'deleted')
             ->where(function ($q) use ($searchValue) {
@@ -399,83 +399,66 @@ class categoryController extends Controller
             })
             ->count();
 
-        // Fetch records
         $records = Activity::select('activity_log.*', 'users.name as causer')
             ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('permission_groups', 'permission_groups.id', 'activity_log.subject_id')
-            ->where('activity_log.subject_type', PermissionGroup::class)
+            ->leftJoin('manager_category', 'manager_category.id', 'activity_log.subject_id')
+            ->where('activity_log.subject_type', Managercategory::class)
             ->where('activity_log.event', 'deleted')
             ->where(function ($q) use ($searchValue) {
                 $q->where('activity_log.description', 'like', '%' . $searchValue . '%')
                     ->orWhere('users.name', 'like', '%' . $searchValue . '%');
             })
-            ->skip($start)
-            ->take($rowperpage)
-            ->orderBy($columnName, $columnSortOrder)
             ->get();
 
-
-        $data_arr = array();
+        $data_arr = [];
 
         foreach ($records as $record) {
-            $id = $record->id;
-            $attributes = (!empty($record->properties['attributes']) ? $record->properties['attributes'] : '');
-            $old = (!empty($record->properties['old']) ? $record->properties['old'] : '');
+            $attributes = $record->properties['attributes'] ?? [];
+
+            // Fetch relations
+            $relations = '';
+            if ($record->subject) {
+                $relations .= '<ul class="list-unstyled mb-0">';
+                $relations .= '<li><strong>Permissions:</strong> ' . implode(', ', $record->subject->permissions->pluck('name')->toArray()) . '</li>';
+                $relations .= '<li><strong>Users:</strong> ' . implode(', ', $record->subject->user->pluck('name')->toArray()) . '</li>';
+                $relations .= '<li><strong>SEO:</strong> ' . ($record->subject->seo->title ?? 'N/A') . '</li>';
+                $relations .= '</ul>';
+            }
+
             $current = '<ul class="list-unstyled">';
-            //Current
-            if (!empty($attributes)) {
-                foreach ($attributes as $key => $value) {
-                    if (is_array($value)) {
-                        $current .= '<li>';
-                        $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $current .= '</li>';
-                    } else {
-                        $current .= '<li>';
-                        $current .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $current .= '</li>';
-                    }
-                }
+            foreach ($attributes as $key => $value) {
+                $current .= '<li><i class="fas fa-angle-right"></i> ' . $key . ': <mark>' . (is_array($value) ? json_encode($value) : $value) . '</mark></li>';
             }
             $current .= '</ul>';
-            //Old
+
+            $current .= '<hr>' . $relations;
+
+            $old = $record->properties['old'] ?? [];
             $oldValue = '<ul class="list-unstyled">';
-            if (!empty($old)) {
-                foreach ($old as $key => $value) {
-                    if (is_array($value)) {
-                        $oldValue .= '<li>';
-                        $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $oldValue .= '</li>';
-                    } else {
-                        $oldValue .= '<li>';
-                        $oldValue .= '<i class="fas fa-angle-right"></i> <em></em>' . $key . ': <mark>' . $value . '</mark>';
-                        $oldValue .= '</li>';
-                    }
-                }
+            foreach ($old as $key => $value) {
+                $oldValue .= '<li><i class="fas fa-angle-right"></i> ' . $key . ': <mark>' . (is_array($value) ? json_encode($value) : $value) . '</mark></li>';
             }
-            //updated at
-            $updated = 'Updated:' . $record->updated_at->diffForHumans() . '<br> At:' . $record->updated_at->isoFormat('llll');
             $oldValue .= '</ul>';
-            //Causer
-            $causer = isset($record->causer) ? $record->causer : '';
+
+            $updated = 'Updated:' . $record->updated_at->diffForHumans() . '<br> At:' . $record->updated_at->isoFormat('llll');
+            $causer = $record->causer ?? '';
             $type = $record->description;
-            $data_arr[] = array(
-                "id" => $id,
+
+            $data_arr[] = [
+                "id" => $record->id,
                 "current" => $current,
                 "old" => $oldValue,
                 "updated" => $updated,
                 "causer" => $causer,
                 "type" => $type,
-            );
+            ];
         }
-        $response = array(
-            "draw" => intval($draw),
-            "iTotalRecords" => $totalRecords,
-            "iTotalDisplayRecords" => $totalRecordswithFilter,
+        return response()->json([
+            "draw" => intval($request->draw),
+            "iTotalRecords" => count($records),
+            "iTotalDisplayRecords" => count($records),
             "aaData" => $data_arr
-        );
-
-        echo json_encode($response);
-        exit;
+        ]);
     }
 
     /**
