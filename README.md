@@ -51,7 +51,7 @@ You may use the following account credentials to access the application backend.
 
 ```
 User: admin@admin.com
-Pass: admin
+Pass: admin****
 ```
 
 ## Usage
