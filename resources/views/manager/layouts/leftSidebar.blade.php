@@ -13,6 +13,14 @@
             <li class="nav-title">User Management</li>
             @can('admin_user-management_module-list')
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->is('manager/category*') ? 'active' : '' }}"
+                       href="{{route('manager.category.index')}}">
+                        <i class="nav-icon cil-cursor"></i> Categories
+                    </a>
+                </li>
+            @endcan
+            @can('admin_user-management_module-list')
+                <li class="nav-item">
                     <a class="nav-link {{ request()->is('manager/post*') ? 'active' : '' }}"
                        href="{{route('manager.post.index')}}">
                         <i class="nav-icon cil-cursor"></i> Posts

@@ -18,9 +18,8 @@ use App\Http\Controllers\Manager\ModuleController;
 //Backend Routes
 Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.module:manager'], 'prefix' => 'manager', 'as' => 'manager.'], function () {
     //Dashboard
-    //Permission Group
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    //Permission Group
+    //Post Group
     Route::get('profile/{id}', [ProfileController::class, 'edit'])->name('profile');
     Route::put('profile/{id}', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('profile-image/{id}', [ProfileController::class, 'getImage'])->name('profile.get.image');
@@ -32,6 +31,18 @@ Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.m
     Route::get('get-post-activity-log/{id}', [\App\Http\Controllers\Manager\post\postController::class, 'getActivityLog'])->name('get.post-activity-log');
     Route::get('get-post-activity-trash', [\App\Http\Controllers\Manager\post\postController::class, 'getTrashActivity'])->name('get.post-activity-trash');
     Route::get('get-post-activity-trash-log', [\App\Http\Controllers\Manager\post\postController::class, 'getTrashActivityLog'])->name('get.post-activity-trash-log');
+
+    //category
+
+    Route::resource('category', \App\Http\Controllers\Manager\category\CategoryController::class);
+    Route::get('get-category', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getIndex'])->name('get.category');
+    Route::get('get-category-select', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getIndexSelect'])->name('get.category-select');
+    Route::get('get-category-activity/{id}', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getActivity'])->name('get.category-activity');
+    Route::get('get-category-activity-log/{id}', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getActivityLog'])->name('get.category-activity-log');
+    Route::get('get-category-activity-trash', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getTrashActivity'])->name('get.category-activity-trash');
+    Route::get('get-category-activity-trash-log', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getTrashActivityLog'])->name('get.category-activity-trash-log');
+
+
 });
 
 
