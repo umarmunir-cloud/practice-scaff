@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Spatie\Activitylog\Models\Activity;
 
-class categoryController extends Controller
+class CategoryController extends Controller
 {
     public function index()
     {

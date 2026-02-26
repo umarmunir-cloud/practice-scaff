@@ -40,6 +40,14 @@
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
+                <div class="mb-3">
+                    <label class="form-label" for="module">Category</label>
+                    <select class="select2-options-module-id form-control @error('category') is-invalid @enderror"
+                            name="category"></select>
+                    @error('category')
+                    <strong class="text-danger">{{ $message }}</strong>
+                    @enderror
+                </div>
                 <button type="submit" class="btn btn-sm btn-success">Submit</button>
             </form>
             {{-- End: Form --}}
