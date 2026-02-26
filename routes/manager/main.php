@@ -25,13 +25,13 @@ Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.m
     Route::put('profile/{id}', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('profile-image/{id}', [ProfileController::class, 'getImage'])->name('profile.get.image');
 
-    Route::resource('crud', \App\Http\Controllers\Manager\Crud\CrudController::class);
-    Route::get('get-crud', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getIndex'])->name('get.crud');
-    Route::get('get-crud-select', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getIndexSelect'])->name('get.crud-select');
-    Route::get('get-crud-activity/{id}', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getActivity'])->name('get.crud-activity');
-    Route::get('get-crud-activity-log/{id}', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getActivityLog'])->name('get.crud-activity-log');
-    Route::get('get-crud-activity-trash', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getTrashActivity'])->name('get.crud-activity-trash');
-    Route::get('get-crud-activity-trash-log', [\App\Http\Controllers\Manager\Crud\CrudController::class, 'getTrashActivityLog'])->name('get.crud-activity-trash-log');
+    Route::resource('post', \App\Http\Controllers\Manager\post\postController::class);
+    Route::get('get-post', [\App\Http\Controllers\Manager\post\postController::class, 'getIndex'])->name('get.post');
+    Route::get('get-post-select', [\App\Http\Controllers\Manager\post\postController::class, 'getIndexSelect'])->name('get.post-select');
+    Route::get('get-post-activity/{id}', [\App\Http\Controllers\Manager\post\postController::class, 'getActivity'])->name('get.post-activity');
+    Route::get('get-post-activity-log/{id}', [\App\Http\Controllers\Manager\post\postController::class, 'getActivityLog'])->name('get.post-activity-log');
+    Route::get('get-post-activity-trash', [\App\Http\Controllers\Manager\post\postController::class, 'getTrashActivity'])->name('get.post-activity-trash');
+    Route::get('get-post-activity-trash-log', [\App\Http\Controllers\Manager\post\postController::class, 'getTrashActivityLog'])->name('get.post-activity-trash-log');
 });
 
 

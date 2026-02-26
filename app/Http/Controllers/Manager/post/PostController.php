@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Manager\Crud;
+namespace App\Http\Controllers\Manager\post;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manager;
@@ -10,21 +10,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Spatie\Activitylog\Models\Activity;
 
-class CrudController extends Controller
+class postController extends Controller
 {
     public function index()
     {
         $data = [
-            'page_title' => 'CRUD Operation Group',
-            'p_title' => 'List Group',
-            'p_summary' => 'List of All Members',
+            'page_title' => 'POSTS',
+            'p_title' => 'Posts',
+            'p_summary' => 'List of Posts',
             'p_description' => null,
-            'url' => route('manager.crud.create'),
+            'url' => route('manager.post.create'),
             'url_text' => 'Add New',
-            'trash' => route('manager.get.crud-activity-trash'),
+            'trash' => route('manager.get.post-activity-trash'),
             'trash_text' => 'View Trash',
         ];
-        return view('manager.crud.index')->with($data);
+        return view('manager.post.index')->with($data);
     }
 
     /**
@@ -50,17 +50,17 @@ class CrudController extends Controller
         $searchValue = $search_arr['value']; // Search value
 
         // Total records
-        $totalRecords = Manager::select('manager_crud.*')->count();
+        $totalRecords = Manager::select('manager_post.*')->count();
         // Total records with filter
-        $totalRecordswithFilter = Manager::select('manager_crud.*')
+        $totalRecordswithFilter = Manager::select('manager_post.*')
             ->where(function ($q) use ($searchValue) {
-                $q->where('manager_crud.name', 'like', '%' . $searchValue . '%');
+                $q->where('manager_post.name', 'like', '%' . $searchValue . '%');
             })
             ->count();
         // Fetch records
-        $records = Manager::select('manager_crud.*')
+        $records = Manager::select('manager_post.*')
             ->where(function ($q) use ($searchValue) {
-                $q->where('manager_crud.name', 'like', '%' . $searchValue . '%');
+                $q->where('manager_post.name', 'like', '%' . $searchValue . '%');
             })
             ->skip($start)
             ->take($rowperpage)
@@ -101,9 +101,9 @@ class CrudController extends Controller
 
         if ($request->has('q')) {
             $search = $request->q;
-            $data = Manager::select('manager_crud.id as id', 'manager_crud.name as name')
+            $data = Manager::select('manager_post.id as id', 'manager_post.name as name')
                 ->where(function ($q) use ($search) {
-                    $q->where('manager_crud.name', 'like', '%' . $search . '%');
+                    $q->where('manager_post.name', 'like', '%' . $search . '%');
                 })
                 ->get();
         }
@@ -118,18 +118,18 @@ class CrudController extends Controller
     public function create()
     {
         $data = array(
-            'page_title' => 'Manager Page',
-            'p_title' => 'Add New',
-            'p_summary' => 'Add Members',
+            'page_title' => 'Post Page',
+            'p_title' => 'Posts',
+            'p_summary' => 'Add Post',
             'p_description' => null,
             'method' => 'POST',
-            'action' => route('manager.crud.store'),
-            'url' => route('manager.crud.index'),
+            'action' => route('manager.post.store'),
+            'url' => route('manager.post.index'),
             'url_text' => 'View All',
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('manager.crud.create')->with($data);
+        return view('manager.post.create')->with($data);
     }
 
     /**
@@ -140,8 +140,8 @@ class CrudController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|unique:manager_crud,name',
-            'slug' => 'required|unique:manager_crud,slug',
+            'name' => 'required|unique:manager_post,name',
+            'slug' => 'required|unique:manager_post,slug',
         ]);
         //
         $arr = [
@@ -157,7 +157,7 @@ class CrudController extends Controller
         ];
         Session::flash('messages', $messages);
 
-        return redirect()->route('manager.crud.index');
+        return redirect()->route('manager.post.index');
     }
 
     /**
@@ -167,7 +167,7 @@ class CrudController extends Controller
      */
     public function show(string $id)
     {
-        $record = Manager::select('manager_crud.*')
+        $record = Manager::select('manager_post.*')
             ->where('id', '=', $id)
             ->first();
         if (empty($record)) {
@@ -175,7 +175,7 @@ class CrudController extends Controller
         }
         // Add activity logs
         $user = Auth::user();
-        activity('CRUD Operation Groups')
+        activity('post Operation Groups')
             ->performedOn($record)
             ->causedBy($user)
             ->event('viewed')
@@ -183,19 +183,19 @@ class CrudController extends Controller
             ->log('viewed');
         //Data Array
         $data = array(
-            'page_title' => 'CRUD OPERATION',
-            'p_title' => 'Members',
-            'p_summary' => 'Read Only Members',
+            'page_title' => 'POSTS',
+            'p_title' => 'Posts',
+            'p_summary' => 'Show Post',
             'p_description' => null,
             'method' => 'POST',
-            'action' => route('manager.crud.update', $record->id),
-            'url' => route('manager.crud.index'),
+            'action' => route('manager.post.update', $record->id),
+            'url' => route('manager.post.index'),
             'url_text' => 'View All',
             'data' => $record,
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('manager.crud.show')->with($data);
+        return view('manager.post.show')->with($data);
     }
 
     /**
@@ -207,15 +207,15 @@ class CrudController extends Controller
     {
         //Data Array
         $data = array(
-            'page_title' => 'crud Activity',
-            'p_title' => 'Activities',
-            'p_summary' => 'Show All Activity',
+            'page_title' => 'Activity Page',
+            'p_title' => 'Posts Activity',
+            'p_summary' => 'Show Posts Activity',
             'p_description' => null,
-            'url' => route('manager.crud.index'),
+            'url' => route('manager.post.index'),
             'url_text' => 'View All',
             'id' => $id,
         );
-        return view('manager.crud.activity')->with($data);
+        return view('manager.post.activity')->with($data);
     }
 
     /**
@@ -243,7 +243,7 @@ class CrudController extends Controller
         // Total records
         $totalRecords = Activity::select('activity_log.*', 'users.name as causer')
             ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->leftJoin('manager_post', 'manager_post.id', 'activity_log.subject_id')
             ->where('activity_log.subject_type', Manager::class)
             ->where('activity_log.subject_id', $id)
             ->count();
@@ -251,7 +251,7 @@ class CrudController extends Controller
         // Total records with filter
         $totalRecordswithFilter = Activity::select('activity_log.*', 'users.name as causer')
             ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->leftJoin('manager_post', 'manager_post.id', 'activity_log.subject_id')
             ->where('activity_log.subject_id', $id)
             ->where('activity_log.subject_type', Manager::class)
             ->where(function ($q) use ($searchValue) {
@@ -263,7 +263,7 @@ class CrudController extends Controller
         // Fetch records
         $records = Activity::select('activity_log.*', 'users.name as causer')
             ->leftJoin('users', 'users.id', 'activity_log.causer_id')
-            ->leftJoin('manager_crud', 'manager_crud.id', 'activity_log.subject_id')
+            ->leftJoin('manager_post', 'manager_post.id', 'activity_log.subject_id')
             ->where('activity_log.subject_id', $id)
             ->where('activity_log.subject_type', Manager::class)
             ->where(function ($q) use ($searchValue) {
@@ -347,14 +347,14 @@ class CrudController extends Controller
     {
         //Data Array
         $data = array(
-            'page_title' => 'All Trashed Activities',
-            'p_title' => 'Trash Activity',
-            'p_summary' => 'Show Crud Trashed Activity',
+            'page_title' => 'Trashed page',
+            'p_title' => 'Posts Activity',
+            'p_summary' => 'Show Post Trashed Activity',
             'p_description' => null,
-            'url' => route('manager.crud.index'),
+            'url' => route('manager.post.index'),
             'url_text' => 'View All',
         );
-        return view('manager.crud.trash')->with($data);
+        return view('manager.post.trash')->with($data);
     }
 
     /**
@@ -485,26 +485,26 @@ class CrudController extends Controller
      */
     public function edit(string $id)
     {
-        $record = Manager::select('manager_crud.*')
+        $record = Manager::select('manager_post.*')
             ->where('id', '=', $id)
             ->first();
         if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
         $data = array(
-            'page_title' => 'CRUD OPERATION',
-            'p_title' => 'Edit Page',
-            'p_summary' => 'Edit Member',
+            'page_title' => 'POSTS',
+            'p_title' => 'Posts',
+            'p_summary' => 'Edit Post',
             'p_description' => null,
             'method' => 'POST',
-            'action' => route('manager.crud.update', $record->id),
-            'url' => route('manager.crud.index'),
+            'action' => route('manager.post.update', $record->id),
+            'url' => route('manager.post.index'),
             'url_text' => 'View All',
             'data' => $record,
             // 'enctype' => 'multipart/form-data' // (Default)Without attachment
             'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
         );
-        return view('manager.crud.edit')->with($data);
+        return view('manager.post.edit')->with($data);
     }
 
     /**
@@ -522,10 +522,10 @@ class CrudController extends Controller
             abort(404, 'NOT FOUND');
         }
 
-        // Validation: manager_crud table ke mutabiq unique check
+        // Validation: manager_post table ke mutabiq unique check
         $this->validate($request, [
-            'name' => 'required|unique:manager_crud,name,' . $record->id,
-            'slug' => 'required|unique:manager_crud,slug,' . $record->id,
+            'name' => 'required|unique:manager_post,name,' . $record->id,
+            'slug' => 'required|unique:manager_post,slug,' . $record->id,
         ]);
 
         // Update record
@@ -543,7 +543,7 @@ class CrudController extends Controller
         ];
         Session::flash('messages', $messages);
 
-        return redirect()->route('manager.crud.index');
+        return redirect()->route('manager.post.index');
     }
 
     /**
@@ -553,7 +553,7 @@ class CrudController extends Controller
      */
     public function destroy(string $id)
     {
-        $record = Manager::select('manager_crud.*')
+        $record = Manager::select('manager_post.*')
             ->where('id', '=', $id)
             ->first();
         if (empty($record)) {
@@ -569,6 +569,6 @@ class CrudController extends Controller
         ];
         Session::flash('messages', $messages);
 
-        return redirect()->route('manager.crud.index');
+        return redirect()->route('manager.post.index');
     }
 }

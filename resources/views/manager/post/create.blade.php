@@ -21,7 +21,7 @@
             </div>
             <hr>
             {{-- Start: Form --}}
-            <form method="POST" action="{{ route('manager.crud.store') }}" enctype="{{$enctype}}">
+            <form method="POST" action="{{ route('manager.post.store') }}" enctype="{{$enctype}}">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label" for="name">Name</label>

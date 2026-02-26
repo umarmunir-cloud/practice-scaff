@@ -19,7 +19,7 @@ class Manager extends Model
     {
         return LogOptions::defaults()
             // Customizing the log name
-            ->useLogName('ManagerCrud')
+            ->useLogName('ManagerPost')
             // Log changes to all the $fillable
             ->logFillable()
             // Customizing the description
@@ -35,7 +35,7 @@ class Manager extends Model
      *
      * @var string
      */
-    protected $table = 'manager_crud';
+    protected $table = 'manager_post';
 
     /**
      * The attributes that are mass assignable.

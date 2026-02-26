@@ -56,7 +56,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
             //Datatable
-            let URL = "{{ route('manager.get.crud-activity-trash-log') }}";
+            let URL = "{{ route('manager.get.post-activity-trash-log') }}";
             $('#indextable').DataTable({
                 destroy: true,
                 processing: true,

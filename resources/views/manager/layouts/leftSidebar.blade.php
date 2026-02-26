@@ -13,9 +13,9 @@
             <li class="nav-title">User Management</li>
             @can('admin_user-management_module-list')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('manager/crud*') ? 'active' : '' }}"
-                       href="{{route('manager.crud.index')}}">
-                        <i class="nav-icon cil-cursor"></i> Crud
+                    <a class="nav-link {{ request()->is('manager/post*') ? 'active' : '' }}"
+                       href="{{route('manager.post.index')}}">
+                        <i class="nav-icon cil-cursor"></i> Posts
                     </a>
                 </li>
             @endcan

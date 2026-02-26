@@ -21,7 +21,7 @@
             </div>
             <hr>
             {{-- Start: Form --}}
-            <form method="POST" action="{{ route('manager.crud.update', $data->id) }}" enctype="{{ $enctype }}">
+            <form method="POST" action="{{ route('manager.post.update', $data->id) }}" enctype="{{ $enctype }}">
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
