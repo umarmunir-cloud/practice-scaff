@@ -12,9 +12,9 @@ return new class extends Migration {
     {
         Schema::create('manager_post', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('image')->nullable();
-            $table->unsignedBigInteger('category_id'); // foreign key
             $table->string('name')->unique();
+            $table->string('slug')->unique();
+            $table->unsignedBigInteger('category_id'); // foreign key
             $table->timestamps();
             // Foreign Key Constraint
             $table->foreign('category_id')
