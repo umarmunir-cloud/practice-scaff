@@ -18,13 +18,11 @@ class Manager extends Model
 
     protected $table = 'manager_post';
 
-
     protected $fillable = [
         'name',
         'slug',
-        'category_id',
+        'category_id'
     ];
-
 
     protected $casts = [
         'category_id' => 'integer',

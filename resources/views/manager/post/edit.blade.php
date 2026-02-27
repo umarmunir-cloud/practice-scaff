@@ -5,8 +5,8 @@
 @endsection
 
 @push('head-scripts')
-    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2-bootstrap5.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2.min.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2-bootstrap5.min.css') }}"/>
 @endpush
 
 @section('content')
@@ -70,12 +70,15 @@
                 {{-- Category --}}
                 <div class="mb-3">
                     <label class="form-label">Category</label>
-                    <select name="category_id"
-                            class="select2-category form-control @error('category_id') is-invalid @enderror">
+                    <select name="category_id" class="form-control">
+                        <option value="">Select Category</option>
+                        @foreach(\App\Models\Managercategory::all() as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('category_id', $data->category_id) == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
                     </select>
-                    @error('category_id')
-                    <strong class="text-danger">{{ $message }}</strong>
-                    @enderror
                 </div>
 
                 <button type="submit" class="btn btn-sm btn-success">
@@ -115,7 +118,7 @@
         |--------------------------------------------------------------------------
         */
 
-        $(document).ready(function() {
+        $(document).ready(function () {
 
             // Preselected category
             let category = [{
@@ -132,7 +135,7 @@
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
-                        return { q: params.term };
+                        return {q: params.term};
                     },
                     processResults: function (data) {
                         return {

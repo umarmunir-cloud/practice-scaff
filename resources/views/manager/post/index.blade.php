@@ -208,7 +208,7 @@
                             return `
                         <div class="d-flex">
                             <a class="me-1" href="${URL}">
-                                <span class="badge bg-success">Show</span>
+                                <span class="badge bg-success text-dark">Show</span>
                             </a>
 
                             <a class="me-1" href="${URL}/edit">
