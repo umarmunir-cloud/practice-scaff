@@ -1,95 +1,179 @@
 @extends('manager.layouts.app')
-@section('page_title')
-    {{(!empty($page_title) && isset($page_title)) ? $page_title : ''}}
-@endsection
-@push('head-scripts')
 
+@section('page_title')
+    {{ (!empty($page_title) && isset($page_title)) ? $page_title : '' }}
+@endsection
+
+@push('head-scripts')
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2.min.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2-bootstrap5.min.css') }}"/>
 @endpush
+
 @section('content')
     <div class="card mt-3">
         <div class="card-body">
+
             {{-- Start: Page Content --}}
             <div class="d-flex justify-content-between">
                 <div>
-                    <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div
-                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <h4 class="card-title mb-0">
+                        {{ (!empty($p_title) && isset($p_title)) ? $p_title : '' }}
+                    </h4>
+                    <div class="small text-medium-emphasis">
+                        {{ (!empty($p_summary) && isset($p_summary)) ? $p_summary : '' }}
+                    </div>
                 </div>
-                <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                        <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
+
+                <div class="btn-toolbar d-none d-md-block">
+                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">
+                        {{ $url_text ?? '' }}
+                    </a>
                 </div>
             </div>
+
             <hr>
+
             {{-- Start: Form --}}
-            <form method="POST" action="{{ route('manager.post.store') }}" enctype="{{$enctype}}">
+            <form method="{{ $method ?? 'POST' }}" action="{{ $action ?? route('manager.post.store') }}"
+                  enctype="{{ $enctype ?? 'multipart/form-data' }}">
                 @csrf
+
+                @if(isset($data))
+                    @method('PUT')
+                @endif
+
+                {{-- Name --}}
                 <div class="mb-3">
                     <label class="form-label" for="name">Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name"
-                           onkeyup="listingslug(this.value)" placeholder="Name"
+                    <input type="text"
+                           class="form-control @error('name') is-invalid @enderror"
+                           name="name"
+                           id="name"
+                           onkeyup="listingslug(this.value)"
+                           placeholder="Name"
                            value="{{ old('name', $data->name ?? '') }}">
+
                     @error('name')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
+
+                {{-- Slug --}}
                 <div class="mb-3">
                     <label class="form-label" for="slug">Slug</label>
-                    <input type="text" class="form-control @error('slug') is-invalid @enderror" name="slug" id="slug"
-                           placeholder="Slug" value="{{ old('slug', $data->slug ?? '') }}">
+                    <input type="text"
+                           class="form-control @error('slug') is-invalid @enderror"
+                           name="slug"
+                           id="slug"
+                           placeholder="Slug"
+                           value="{{ old('slug', $data->slug ?? '') }}">
+
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
+
+                {{-- Category (Select2 Ajax like Permission) --}}
                 <div class="mb-3">
-                    <label class="form-label" for="module">Category</label>
-                    <select class="select2-options-module-id form-control @error('category') is-invalid @enderror"
-                            name="category"></select>
-                    @error('category')
+                    <label class="form-label" for="category_id">Category</label>
+                    <select class="select2-options-category-id form-control @error('category_id') is-invalid @enderror"
+                            name="category_id">
+                    </select>
+
+                    @error('category_id')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
-                <button type="submit" class="btn btn-sm btn-success">Submit</button>
+
+                <button type="submit" class="btn btn-sm btn-success">
+                    Submit
+                </button>
+
             </form>
             {{-- End: Form --}}
-            {{-- Page Description : Start --}}
+
+            {{-- Page Description --}}
             @if(!empty($p_description) && isset($p_description))
                 <div class="card-footer">
                     <div class="row">
-                        <div class="col-12 mb-sm-2 mb-0">
-                            <p>{{(!empty($p_description) && isset($p_description)) ? $p_description : ''}}</p>
+                        <div class="col-12">
+                            <p>{{ $p_description }}</p>
                         </div>
                     </div>
                 </div>
             @endif
-            {{-- Page Description : End --}}
-            {{-- End: Page Content --}}
+
         </div>
     </div>
 @endsection
+
+
 @push('footer-scripts')
+
+    <script src="{{ asset('admin/select2/dist/js/select2.js') }}"></script>
+
     <script>
-        //Slugify
+        // Slugify
         function slugify(text) {
             return text
-                .normalize('NFD')           // The normalize() method returns the Unicode Normalization Form of a given string.
-                .toLowerCase()              // Convert the string to lowercase letters
-                .toString()                 // Cast to string
-                .trim()                     // Remove whitespace from both sides of a string
-                .replace(/ /g, '-')         // Replace space with -
-                .replace(/[^\w-]+/g, '')    // Remove all non-word chars
-                .replace(/\-\-+/g, '-')     // Replace multiple - with single -
-                .replace(/_+/g, '');           // Replace multiple _ with single empty space
+                .normalize('NFD')
+                .toLowerCase()
+                .toString()
+                .trim()
+                .replace(/ /g, '-')
+                .replace(/[^\w-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/_+/g, '');
         }
 
         function listingslug(text) {
             $('#slug').val(slugify(text));
         }
+
+        $(document).ready(function () {
+
+            // Select Category (Ajax like Permission)
+            $('.select2-options-category-id').select2({
+                theme: "bootstrap5",
+                placeholder: 'Select Category',
+                ajax: {
+                    url: '{{ route("manager.get.category-select") }}',
+                    dataType: 'json',
+                    delay: 250,
+                    type: 'GET',
+                    data: function (params) {
+                        return {
+                            q: params.term,
+                            type: 'public',
+                            _token: '{{ csrf_token() }}'
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: item.name
+                                }
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            }).trigger('change.select2');
+
+            $(document).on('select2:open', () => {
+                document.querySelector('.select2-search__field').focus();
+            });
+
+        });
     </script>
-    {{-- Toastr : Script : Start --}}
+
+    {{-- Toastr --}}
     @if(Session::has('messages'))
         <script>
             noti({!! json_encode((Session::get('messages'))) !!});
         </script>
     @endif
-    {{-- Toastr : Script : End --}}
+
 @endpush

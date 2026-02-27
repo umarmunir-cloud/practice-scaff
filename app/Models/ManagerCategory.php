@@ -18,7 +18,6 @@ class Managercategory extends Model
         'slug',
     ];
 
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -27,6 +26,12 @@ class Managercategory extends Model
             ->setDescriptionForEvent(fn(string $eventName) => "{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+
+    public function posts()
+    {
+        return $this->hasMany(Manager::class, 'category_id');
     }
 
     public function products()
@@ -38,7 +43,7 @@ class Managercategory extends Model
     {
         return $this->belongsToMany(
             User::class,
-            'category_user',   // pivot table
+            'category_user',
             'category_id',
             'user_id'
         );

@@ -1,90 +1,160 @@
 @extends('manager.layouts.app')
-@section('page_title')
-    {{(!empty($page_title) && isset($page_title)) ? $page_title : ''}}
-@endsection
-@push('head-scripts')
 
+@section('page_title')
+    {{ $page_title ?? '' }}
+@endsection
+
+@push('head-scripts')
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2-bootstrap5.min.css') }}" />
 @endpush
+
 @section('content')
     <div class="card mt-3">
         <div class="card-body">
-            {{-- Start: Page Content --}}
+
+            {{-- Header --}}
             <div class="d-flex justify-content-between">
                 <div>
-                    <h4 class="card-title mb-0">{{(!empty($p_title) && isset($p_title)) ? $p_title : ''}}</h4>
-                    <div
-                        class="small text-medium-emphasis">{{(!empty($p_summary) && isset($p_summary)) ? $p_summary : ''}}</div>
+                    <h4 class="card-title mb-0">{{ $p_title ?? '' }}</h4>
+                    <div class="small text-medium-emphasis">
+                        {{ $p_summary ?? '' }}
+                    </div>
                 </div>
-                <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">{{ $url_text ?? '' }}</a>
+
+                <div class="btn-toolbar d-none d-md-block">
+                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">
+                        {{ $url_text ?? '' }}
+                    </a>
                 </div>
             </div>
+
             <hr>
-            {{-- Start: Form --}}
-            <form method="POST" action="{{ route('manager.post.update', $data->id) }}" enctype="{{ $enctype }}">
+
+            {{-- Form --}}
+            <form method="POST"
+                  action="{{ route('manager.post.update', $data->id) }}"
+                  enctype="{{ $enctype }}">
+
                 @csrf
                 @method('PUT')
+
+                {{-- Name --}}
                 <div class="mb-3">
-                    <label class="form-label" for="name">Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name"
-                           onkeyup="listingslug(this.value)" placeholder="Name"
-                           value="{{ old('name', $data->name ?? '') }}">
+                    <label class="form-label">Name</label>
+                    <input type="text"
+                           name="name"
+                           id="name"
+                           class="form-control @error('name') is-invalid @enderror"
+                           value="{{ old('name', $data->name ?? '') }}"
+                           onkeyup="generateSlug(this.value)">
                     @error('name')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
+
+                {{-- Slug --}}
                 <div class="mb-3">
-                    <label class="form-label" for="slug">Slug</label>
-                    <input type="text" class="form-control  @error('slug') is-invalid @enderror" name="slug"
+                    <label class="form-label">Slug</label>
+                    <input type="text"
+                           name="slug"
                            id="slug"
-                           placeholder="Name" value="{{ old('slug', $data->slug ?? '') }}" readonly>
+                           class="form-control @error('slug') is-invalid @enderror"
+                           value="{{ old('slug', $data->slug ?? '') }}"
+                           readonly>
                     @error('slug')
                     <strong class="text-danger">{{ $message }}</strong>
                     @enderror
                 </div>
-                <button type="submit" class="btn btn-sm btn-success">Submit</button>
-            </form>
-            {{-- End: Form --}}
-            {{-- Page Description : Start --}}
-            @if(!empty($p_description) && isset($p_description))
-                <div class="card-footer">
-                    <div class="row">
-                        <div class="col-12 mb-sm-2 mb-0">
-                            <p>{{(!empty($p_description) && isset($p_description)) ? $p_description : ''}}</p>
-                        </div>
-                    </div>
+
+                {{-- Category --}}
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select name="category_id"
+                            class="select2-category form-control @error('category_id') is-invalid @enderror">
+                    </select>
+                    @error('category_id')
+                    <strong class="text-danger">{{ $message }}</strong>
+                    @enderror
                 </div>
-            @endif
-            {{-- Page Description : End --}}
-            {{-- End: Page Content --}}
+
+                <button type="submit" class="btn btn-sm btn-success">
+                    Update
+                </button>
+
+            </form>
+
         </div>
     </div>
 @endsection
+
 @push('footer-scripts')
+
+    <script src="{{ asset('admin/select2/dist/js/select2.js') }}"></script>
+
     <script>
-        //Slugify
+        /*
+        |--------------------------------------------------------------------------
+        | Slug Generator
+        |--------------------------------------------------------------------------
+        */
         function slugify(text) {
-            return text
-                .normalize('NFD') // Unicode Normalization
-                // The normalize() method returns the Unicode Normalization Form of a given string.
-                .toLowerCase() // Convert the string to lowercase letters
-                .toString() // Cast to string
-                .trim() // Remove whitespace from both sides of a string
-                .replace(/ /g, '-') // Replace space with -
-                .replace(/[^\w-]+/g, '') // Remove all non-word chars
-                .replace(/\-\-+/g, '-') // Replace multiple - with single -
-                .replace(/_+/g, ''); // Replace multiple _ with single empty space
+            return text.toString().toLowerCase().trim()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-');
         }
 
-        function listingslug(text) {
-            $('#slug').val(slugify(text));
+        function generateSlug(value) {
+            $('#slug').val(slugify(value));
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Category Select2
+        |--------------------------------------------------------------------------
+        */
+
+        $(document).ready(function() {
+
+            // Preselected category
+            let category = [{
+                id: "{{ $data->category_id }}",
+                text: "{{ $data->category->name ?? '' }}"
+            }];
+
+            $('.select2-category').select2({
+                data: category,
+                theme: "bootstrap5",
+                placeholder: 'Select Category',
+                ajax: {
+                    url: "{{ route('manager.get.post-select') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { q: params.term };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: item.name
+                                }
+                            })
+                        };
+                    }
+                }
+            });
+
+        });
     </script>
-    {{-- Toastr : Script : Start --}}
+
+    {{-- Toastr --}}
     @if(Session::has('messages'))
         <script>
-            noti({!! json_encode((Session::get('messages'))) !!});
+            noti(@json(Session::get('messages')));
         </script>
     @endif
-    {{-- Toastr : Script : End --}}
+
 @endpush

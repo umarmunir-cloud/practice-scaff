@@ -33,7 +33,6 @@ Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.m
     Route::get('get-post-activity-trash-log', [\App\Http\Controllers\Manager\post\postController::class, 'getTrashActivityLog'])->name('get.post-activity-trash-log');
 
     //category
-
     Route::resource('category', \App\Http\Controllers\Manager\category\CategoryController::class);
     Route::get('get-category', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getIndex'])->name('get.category');
     Route::get('get-category-select', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getIndexSelect'])->name('get.category-select');
@@ -41,7 +40,6 @@ Route::group(['middleware' => ['auth', 'verified', 'xss', 'user.status', 'user.m
     Route::get('get-category-activity-log/{id}', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getActivityLog'])->name('get.category-activity-log');
     Route::get('get-category-activity-trash', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getTrashActivity'])->name('get.category-activity-trash');
     Route::get('get-category-activity-trash-log', [\App\Http\Controllers\Manager\category\CategoryController::class, 'getTrashActivityLog'])->name('get.category-activity-trash-log');
-
 
 });
 
