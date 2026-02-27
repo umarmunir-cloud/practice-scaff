@@ -85,11 +85,58 @@
                     @enderror
                 </div>
 
+                <div class="image-edit mb-3">
+                    <label class="form-label" for="password">Profile Image</label>
+                    <input type="file" id="image-cropper" accept=".png, .jpg, .jpeg" name="image"
+                           class="form-control wizard-required image-cropper @error('password') is-invalid @enderror">
+                    <input type="hidden" name="base64image" id="base64image">
+                    @error('image')
+                    <strong class="text-danger">{{ $message }}</strong>
+                    @enderror
+                    <div class="image-preview container-image-preview">
+                        <div id="image-preview-background"></div>
+                    </div>
+                </div>
+
+
                 <button type="submit" class="btn btn-sm btn-success">
                     Submit
                 </button>
 
             </form>
+
+
+            {{-- Modal --}}
+            <div class="modal fade bd-example-modal-lg imageCrop" id="model" tabindex="-1" role="dialog"
+                 aria-labelledby="cropperModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cropperModal">Crop Image</h5>
+                            <button type="button" class="close btn-close" id="reset-image"
+                                    data-coreui-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="img-container">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 col-sm-11 col-md-10 col-lg-9 col-xl-8">
+                                        <img id="previewImage" src="" class="img-fluid w-100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-between flex-wrap">
+                            <button type="button" class="btn btn-secondary" id="reset-image-close"
+                                    data-coreui-dismiss="modal">Close
+                            </button>
+                            <button type="button" class="btn btn-primary crop" id="cropImage">Crop</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{-- End: Modal --}}
+
+
             {{-- End: Form --}}
 
             {{-- Page Description --}}
@@ -166,6 +213,71 @@
                 document.querySelector('.select2-search__field').focus();
             });
 
+        });
+    </script>
+    <script>
+        //Image Cropper
+        $(document).ready(function () {
+            var $modal = $('.imageCrop');
+            var image = document.getElementById('previewImage');
+            var cropper;
+            $("body").on("change", ".image-cropper", function (e) {
+                e.preventDefault();
+                var files = e.target.files;
+                var done = function (url) {
+                    image.src = url;
+                    $modal.modal('show');
+                };
+                var reader;
+                var file;
+                var URL;
+                if (files && files.length > 0) {
+                    file = files[0];
+                    if (URL) {
+                        done(URL.createObjectURL(file));
+                    } else if (FileReader) {
+                        reader = new FileReader();
+                        reader.onload = function (e) {
+                            done(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+            $modal.on('shown.coreui.modal', function () {
+                cropper = new Cropper(image, {
+                    dragMode: 'move',
+                    aspectRatio: 1 / 1,
+                    autoCropArea: 0.65,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+            }).on('hidden.coreui.modal', function () {
+                cropper.destroy();
+                cropper = null;
+            });
+            $("body").on("click", "#cropImage", function () {
+                canvas = cropper.getCroppedCanvas({
+                    width: 200,
+                    height: 300,
+                });
+                canvas.toBlob(function (blob) {
+                    url = URL.createObjectURL(blob);
+                    var reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = function () {
+                        var base64data = reader.result;
+                        $('#base64image').val(base64data);
+                        document.getElementById('image-preview-background').style.backgroundImage = "url(" + base64data + ")";
+                        $modal.modal('hide');
+                    }
+                });
+            });
         });
     </script>
 
