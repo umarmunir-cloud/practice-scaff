@@ -37,7 +37,7 @@
 
             {{-- Filters (Permission Style) --}}
             <div class="row">
-                <div class="col-12 mb-4">
+                <div class="col-12 mb-4 text-dark">
                     <fieldset class="reset-this redo-fieldset">
                         <legend class="reset-this redo-legend">Filters</legend>
 
@@ -73,6 +73,7 @@
                                 <th>Name</th>
                                 <th>Slug</th>
                                 <th>Category</th>
+                                <th>Image</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -182,6 +183,7 @@
                 },
                 columns: [
                     {data: 'id'},
+                    {data: 'image'},
                     {data: 'name'},
                     {data: 'slug'},
                     {data: 'category'},
@@ -197,38 +199,48 @@
                         }
                     },
                     {
+                        targets: 1, // Image column
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            if (row.image) {
+                                return `<img src="${row.image}" class="img-fluid rounded-circle" style="width:40px; height:40px; object-fit:cover;">`;
+                            } else {
+                                return `<span class="text-muted">No Image</span>`;
+                            }
+                        }
+                    },
+                    {
                         targets: -1,
                         searchable: false,
                         orderable: false,
                         render: function (data, type, row) {
-
-                            let URL = "{{ route('manager.post.show', ':id') }}";
-                            URL = URL.replace(':id', row.id);
+                            let URL = "{{ route('manager.post.show', ':id') }}".replace(':id', row.id);
 
                             return `
-                        <div class="d-flex">
-                            <a class="me-1" href="${URL}">
-                                <span class="badge bg-success text-dark">Show</span>
-                            </a>
+                            <div class="d-flex">
+                                <a class="me-1" href="${URL}">
+                                    <span class="badge bg-success text-dark">Show</span>
+                                </a>
 
-                            <a class="me-1" href="${URL}/edit">
-                                <span class="badge bg-info text-dark">Edit</span>
-                            </a>
+                                <a class="me-1" href="${URL}/edit">
+                                    <span class="badge bg-info text-dark">Edit</span>
+                                </a>
 
-                            <a href="javascript:void(0)">
-                                <span class="badge bg-danger"
-                                      data-url="${URL}"
-                                      data-coreui-toggle="modal"
-                                      data-coreui-target="#del-model">
-                                      Delete
-                                </span>
-                            </a>
-                        </div>
-                    `;
+                                <a href="javascript:void(0)">
+                                    <span class="badge bg-danger"
+                                          data-url="${URL}"
+                                          data-coreui-toggle="modal"
+                                          data-coreui-target="#del-model">
+                                          Delete
+                                    </span>
+                                </a>
+                            </div>`;
                         }
                     }
                 ]
-            });
+            })
+            ;
 
         });
 

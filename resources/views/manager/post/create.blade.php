@@ -7,6 +7,9 @@
 @push('head-scripts')
     <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2.min.css') }}"/>
     <link rel="stylesheet" href="{{ asset('admin/select2/dist/css/select2-bootstrap5.min.css') }}"/>
+    <!-- Cropper CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+
 @endpush
 
 @section('content')
@@ -159,6 +162,9 @@
 
     <script src="{{ asset('admin/select2/dist/js/select2.js') }}"></script>
 
+    <!-- Cropper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
     <script>
         // Slugify
         function slugify(text) {
@@ -221,6 +227,7 @@
             var $modal = $('.imageCrop');
             var image = document.getElementById('previewImage');
             var cropper;
+
             $("body").on("change", ".image-cropper", function (e) {
                 e.preventDefault();
                 var files = e.target.files;
@@ -244,6 +251,7 @@
                     }
                 }
             });
+
             $modal.on('shown.coreui.modal', function () {
                 cropper = new Cropper(image, {
                     dragMode: 'move',
@@ -258,16 +266,16 @@
                     toggleDragModeOnDblclick: false,
                 });
             }).on('hidden.coreui.modal', function () {
-                cropper.destroy();
-                cropper = null;
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
             });
+
             $("body").on("click", "#cropImage", function () {
-                canvas = cropper.getCroppedCanvas({
-                    width: 200,
-                    height: 300,
-                });
+                if (!cropper) return;
+                var canvas = cropper.getCroppedCanvas({width: 200, height: 300});
                 canvas.toBlob(function (blob) {
-                    url = URL.createObjectURL(blob);
                     var reader = new FileReader();
                     reader.readAsDataURL(blob);
                     reader.onloadend = function () {

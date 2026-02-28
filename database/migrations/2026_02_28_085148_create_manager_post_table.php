@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->bigIncrements('id');
             $table->string('name')->unique();
             $table->string('slug')->unique();
+            $table->string('image')->nullable();
             $table->unsignedBigInteger('category_id'); // foreign key
             $table->timestamps();
             // Foreign Key Constraint

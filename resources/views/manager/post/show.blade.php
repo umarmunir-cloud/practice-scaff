@@ -13,23 +13,20 @@
     <div class="card mt-3">
         <div class="card-body">
 
-            {{-- Header --}}
-            <div class="d-flex justify-content-between">
-                <div>
-                    <h4 class="card-title mb-0">{{ $p_title ?? '' }}</h4>
-                    <div class="small text-medium-emphasis">
-                        {{ $p_summary ?? '' }}
+            {{-- Post Image --}}
+            <div class="mb-4 text-center">
+                @if($data->image)
+                    <img src="{{ asset($data->image) }}"
+                         class="img-fluid rounded-circle"
+                         style="width:200px; height:200px; object-fit:cover; border:2px solid #dee2e6;">
+                @else
+                    <div
+                        class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+                        style="width:100px; height:100px; font-size:0.9rem; border:2px solid #dee2e6;">
+                        No Image
                     </div>
-                </div>
-
-                <div class="btn-toolbar d-none d-md-block">
-                    <a href="{{ $url ?? '' }}" class="btn btn-sm btn-primary">
-                        {{ $url_text ?? '' }}
-                    </a>
-                </div>
+                @endif
             </div>
-
-            <hr>
 
             {{-- Form --}}
             <form>
@@ -86,6 +83,8 @@
                 data: category,
                 theme: "bootstrap5",
                 placeholder: 'Select Category',
+                width: '100%',
+                disabled: true
             });
 
         });

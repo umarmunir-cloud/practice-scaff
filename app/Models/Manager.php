@@ -21,7 +21,8 @@ class Manager extends Model
     protected $fillable = [
         'name',
         'slug',
-        'category_id'
+        'category_id',
+        'image'
     ];
 
     protected $casts = [

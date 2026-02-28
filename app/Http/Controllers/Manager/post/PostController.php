@@ -7,6 +7,7 @@ use App\Models\Manager;
 use App\Models\Managercategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\File;
 
 class PostController extends Controller
 {
@@ -27,17 +28,17 @@ class PostController extends Controller
         return view('manager.post.index')->with($data);
     }
 
-
     public function show(string $id)
     {
         $record = Manager::select('manager_post.*')
             ->where('id', '=', $id)
             ->first();
+
         if (empty($record)) {
             abort(404, 'NOT FOUND');
         }
-        //Data Array
-        $data = array(
+
+        $data = [
             'page_title' => 'POSTS',
             'p_title' => 'Post',
             'p_summary' => 'Show Post',
@@ -47,9 +48,9 @@ class PostController extends Controller
             'url' => route('manager.post.index'),
             'url_text' => 'View All',
             'data' => $record,
-            // 'enctype' => 'multipart/form-data' // (Default)Without attachment
-            'enctype' => 'application/x-www-form-urlencoded', // With attachment like file or images in form
-        );
+            'enctype' => 'application/x-www-form-urlencoded',
+        ];
+
         return view('manager.post.show')->with($data);
     }
 
@@ -64,24 +65,18 @@ class PostController extends Controller
         $columnSortOrder = $request->order[0]['dir'];
         $searchValue = $request->search['value'];
 
-
         $where = [];
-
         if (!empty($request->category_id)) {
             $where[] = ['manager_post.category_id', '=', $request->category_id];
         }
 
-
         $totalRecords = Manager::where($where)->count();
-
-
         $totalRecordswithFilter = Manager::where($where)
             ->where(function ($q) use ($searchValue) {
                 $q->where('manager_post.name', 'like', "%$searchValue%")
                     ->orWhere('manager_post.slug', 'like', "%$searchValue%");
             })
             ->count();
-
 
         $records = Manager::select('manager_post.*', 'manager_category.name as category')
             ->leftJoin('manager_category', 'manager_category.id', '=', 'manager_post.category_id')
@@ -96,14 +91,13 @@ class PostController extends Controller
             ->get();
 
         $data_arr = [];
-
         foreach ($records as $record) {
-
             $data_arr[] = [
                 "id" => $record->id,
                 "name" => $record->name,
                 "slug" => $record->slug,
-                "category" => $record->category ?? ''
+                "category" => $record->category ?? '',
+                "image" => $record->image ? asset($record->image) : null,
             ];
         }
 
@@ -115,15 +109,12 @@ class PostController extends Controller
         ]);
     }
 
-
     public function getCategoryIndexSelect(Request $request)
     {
         $data = [];
 
         if ($request->has('q')) {
-
             $search = $request->q;
-
             $data = Managercategory::select('id', 'name')
                 ->where('name', 'like', "%$search%")
                 ->get();
@@ -148,26 +139,33 @@ class PostController extends Controller
         return view('manager.post.create')->with($data);
     }
 
-
     public function store(Request $request)
     {
         $this->validate($request, [
             'name' => 'required|unique:manager_post,name',
             'slug' => 'required|unique:manager_post,slug',
             'category_id' => 'required|exists:manager_category,id',
+            'base64image' => 'nullable|string', // <-- change here
         ]);
+
+        $imagePath = null;
+
+        if ($request->has('base64image') && $request->base64image) {
+            $imageData = $request->base64image;
+            $imageName = time() . '_post.' . explode('/', explode(':', substr($imageData, 0, strpos($imageData, ';')))[1])[1];
+            File::put(public_path('uploads/posts/') . $imageName, base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imageData)));
+            $imagePath = 'uploads/posts/' . $imageName;
+        }
 
         Manager::create([
             'name' => $request->name,
             'slug' => $request->slug,
             'category_id' => $request->category_id,
+            'image' => $imagePath,
         ]);
 
         Session::flash('messages', [
-            [
-                'message' => 'Record created successfully',
-                'message_type' => 'success'
-            ]
+            ['message' => 'Record created successfully', 'message_type' => 'success']
         ]);
 
         return redirect()->route('manager.post.index');
@@ -176,10 +174,7 @@ class PostController extends Controller
     public function edit(string $id)
     {
         $record = Manager::find($id);
-
-        if (!$record) {
-            abort(404);
-        }
+        if (!$record) abort(404);
 
         $data = [
             'page_title' => 'POSTS',
@@ -196,53 +191,63 @@ class PostController extends Controller
         return view('manager.post.edit')->with($data);
     }
 
-
     public function update(Request $request, string $id)
     {
         $record = Manager::find($id);
-
-        if (!$record) {
-            abort(404);
-        }
+        if (!$record) abort(404);
 
         $this->validate($request, [
             'name' => 'required|unique:manager_post,name,' . $record->id,
             'slug' => 'required|unique:manager_post,slug,' . $record->id,
             'category_id' => 'required|exists:manager_category,id',
+            'base64image' => 'nullable|string', // <- base64 validation
         ]);
 
+        // Step 1: Start with old image path
+        $imagePath = $record->image;
+
+        // Step 2: Paste ye code exactly here
+        if ($request->has('base64image') && $request->base64image) {
+            // Delete old image
+            if ($record->image && File::exists(public_path($record->image))) {
+                File::delete(public_path($record->image));
+            }
+
+            $imageData = $request->base64image;
+            $imageName = time() . '_post.' . explode('/', explode(':', substr($imageData, 0, strpos($imageData, ';')))[1])[1];
+            File::put(public_path('uploads/posts/') . $imageName, base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imageData)));
+            $imagePath = 'uploads/posts/' . $imageName;
+        }
+
+        // Step 3: Update record
         $record->update([
             'name' => $request->name,
             'slug' => $request->slug,
             'category_id' => $request->category_id,
+            'image' => $imagePath,
         ]);
 
         Session::flash('messages', [
-            [
-                'message' => 'Record updated successfully',
-                'message_type' => 'success'
-            ]
+            ['message' => 'Record updated successfully', 'message_type' => 'success']
         ]);
 
         return redirect()->route('manager.post.index');
     }
 
-
     public function destroy(string $id)
     {
         $record = Manager::find($id);
+        if (!$record) abort(404);
 
-        if (!$record) {
-            abort(404);
+        // Delete image file
+        if ($record->image && File::exists(public_path($record->image))) {
+            File::delete(public_path($record->image));
         }
 
         $record->delete();
 
         Session::flash('messages', [
-            [
-                'message' => 'Record deleted successfully',
-                'message_type' => 'success'
-            ]
+            ['message' => 'Record deleted successfully', 'message_type' => 'success']
         ]);
 
         return redirect()->route('manager.post.index');
